@@ -16,6 +16,7 @@ class Person extends Model
         'name',
         'trade_name',
         'document',
+        'birth_date',
         'email',
         'phone',
         'mobile',
@@ -32,13 +33,44 @@ class Person extends Model
         'bank',
         'agency',
         'account',
+        'metadata',
         'notes',
         'active',
     ];
 
 
+    protected function casts(): array
+    {
+        return [
+            'birth_date' => 'date',
+            'metadata' => 'array',
+            'active' => 'boolean',
+        ];
+    }
+
+
     public function company()
     {
-        return $this->belongsTo(Company::class);
+        return $this->belongsTo(
+            Company::class
+        );
+    }
+
+
+    public function scopeOwners($query)
+    {
+        return $query->where(
+            'person_type',
+            'owner'
+        );
+    }
+
+
+    public function scopeTenants($query)
+    {
+        return $query->where(
+            'person_type',
+            'tenant'
+        );
     }
 }

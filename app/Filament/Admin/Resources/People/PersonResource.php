@@ -16,9 +16,17 @@ use Filament\Tables\Table;
 
 class PersonResource extends Resource
 {
+    protected static ?string $navigationLabel = 'Pessoas';
+
+    protected static string|\UnitEnum|null $navigationGroup = 'Cadastros';
+
+    protected static ?string $modelLabel = 'Pessoa';
+
+    protected static ?string $pluralModelLabel = 'Pessoas';
+
     protected static ?string $model = Person::class;
 
-    protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedRectangleStack;
+    protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedUsers;
 
     public static function form(Schema $schema): Schema
     {
