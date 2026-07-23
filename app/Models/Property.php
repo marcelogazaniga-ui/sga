@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class Property extends Model
 {
@@ -14,6 +15,8 @@ class Property extends Model
     */
 
     protected $fillable = [
+
+        'company_id',
 
         'codigo',
         'title',
@@ -34,6 +37,7 @@ class Property extends Model
         'rent_value',
 
         'active',
+        'status',
 
         'notes',
 
@@ -57,6 +61,7 @@ class Property extends Model
     ];
 
 
+
     /*
     |--------------------------------------------------------------------------
     | Boot / Events
@@ -68,25 +73,29 @@ class Property extends Model
 
         static::created(function (Property $property) {
 
+            if (!$property->codigo) {
 
-            $property->update([
+                $property->update([
 
-                'codigo' => 'IMV-' . str_pad(
+                    'codigo' => 'IMV-' . str_pad(
 
-                    $property->id,
+                        $property->id,
 
-                    6,
+                        6,
 
-                    '0',
+                        '0',
 
-                    STR_PAD_LEFT
+                        STR_PAD_LEFT
 
-                ),
+                    ),
 
-            ]);
+                ]);
+
+            }
 
 
         });
+
 
     }
 
@@ -97,6 +106,18 @@ class Property extends Model
     | Relationships
     |--------------------------------------------------------------------------
     */
+
+
+    /**
+     * Empresa responsável pelo imóvel
+     */
+    public function company(): BelongsTo
+    {
+
+        return $this->belongsTo(Company::class);
+
+    }
+
 
 
     /**
@@ -139,6 +160,15 @@ class Property extends Model
 
 
 
+    public function scopeAvailable($query)
+    {
+
+        return $query->where('status', 'available');
+
+    }
+
+
+
     /*
     |--------------------------------------------------------------------------
     | Accessors
@@ -152,16 +182,24 @@ class Property extends Model
         return match ($this->type) {
 
 
-            'house' => 'Casa',
-
-            'apartment' => 'Apartamento',
-
-            'commercial' => 'Sala Comercial',
-
-            'land' => 'Terreno',
+            'house' =>
+                'Casa',
 
 
-            default => ucfirst($this->type),
+            'apartment' =>
+                'Apartamento',
+
+
+            'commercial' =>
+                'Sala Comercial',
+
+
+            'land' =>
+                'Terreno',
+
+
+            default =>
+                ucfirst($this->type),
 
         };
 
@@ -172,11 +210,33 @@ class Property extends Model
     public function getStatusLabelAttribute(): string
     {
 
-        return $this->active
+        return match ($this->status) {
 
-            ? 'Disponível'
 
-            : 'Indisponível';
+            'available' =>
+                'Disponível',
+
+
+            'rented' =>
+                'Alugado',
+
+
+            'reserved' =>
+                'Reservado',
+
+
+            'maintenance' =>
+                'Manutenção',
+
+
+            'inactive' =>
+                'Inativo',
+
+
+            default =>
+                'Não definido',
+
+        };
 
     }
 

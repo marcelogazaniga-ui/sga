@@ -5,6 +5,7 @@ namespace App\Filament\Admin\Resources\Properties\Schemas;
 use App\Enums\PropertyPersonRole;
 use App\Forms\Components\MoneyInput;
 use App\Models\Person;
+use App\Models\Company;
 use App\Support\FormMasks;
 use Filament\Forms\Components\Repeater;
 use Filament\Forms\Components\Select;
@@ -24,6 +25,23 @@ class PropertyForm
                 Section::make('Dados do Imóvel')
 
                     ->schema([
+
+
+                        Select::make('company_id')
+
+                            ->label('Empresa')
+
+                            ->relationship(
+                                'company',
+                                'name'
+                            )
+
+                            ->searchable()
+
+                            ->preload()
+
+                            ->required(),
+
 
 
                         TextInput::make('codigo')
@@ -71,6 +89,16 @@ class PropertyForm
                             ->required(),
 
 
+                    ])
+
+                    ->columns(2),
+
+
+
+                Section::make('Localização')
+
+                    ->schema([
+
 
                         FormMasks::cep('zip_code')
 
@@ -115,12 +143,9 @@ class PropertyForm
                             ->maxLength(2),
 
 
-
                     ])
 
                     ->columns(2),
-
-
 
 
 
@@ -158,12 +183,9 @@ class PropertyForm
                             ->label('Valor aluguel'),
 
 
-
                     ])
 
                     ->columns(2),
-
-
 
 
 
@@ -222,7 +244,6 @@ class PropertyForm
                                     ->required(),
 
 
-
                             ])
 
                             ->columns(2)
@@ -232,10 +253,7 @@ class PropertyForm
                             ),
 
 
-
                     ]),
-
-
 
 
 
@@ -244,29 +262,41 @@ class PropertyForm
                     ->schema([
 
 
-                        Select::make('active')
+                        Select::make('status')
 
                             ->label('Situação')
 
                             ->options([
 
-                                1 =>
+
+                                'available' =>
                                     'Disponível',
 
-                                0 =>
-                                    'Indisponível',
+
+                                'rented' =>
+                                    'Alugado',
+
+
+                                'reserved' =>
+                                    'Reservado',
+
+
+                                'maintenance' =>
+                                    'Manutenção',
+
+
+                                'inactive' =>
+                                    'Inativo',
+
 
                             ])
 
-                            ->default(1)
+                            ->default('available')
 
                             ->required(),
 
 
-
                     ]),
-
-
 
 
 
@@ -284,9 +314,7 @@ class PropertyForm
                             ->columnSpanFull(),
 
 
-
                     ]),
-
 
 
             ]);
