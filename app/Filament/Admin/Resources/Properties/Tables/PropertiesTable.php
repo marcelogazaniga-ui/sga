@@ -4,11 +4,11 @@ namespace App\Filament\Admin\Resources\Properties\Tables;
 
 use Filament\Tables\Table;
 use Filament\Tables\Columns\TextColumn;
-use Filament\Tables\Columns\IconColumn;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Actions\EditAction;
 use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\BulkActionGroup;
+use App\Models\Company;
 
 class PropertiesTable
 {
@@ -17,6 +17,16 @@ class PropertiesTable
         return $table
 
             ->columns([
+
+
+                TextColumn::make('company.name')
+
+                    ->label('Empresa')
+
+                    ->searchable()
+
+                    ->sortable(),
+
 
 
                 TextColumn::make('codigo')
@@ -67,14 +77,6 @@ class PropertiesTable
 
 
 
-                TextColumn::make('property_people_count')
-
-                    ->label('Participantes')
-
-                    ->counts('propertyPeople'),
-
-
-
                 TextColumn::make('status_label')
 
                     ->label('Situação')
@@ -88,23 +90,26 @@ class PropertiesTable
                             'success',
 
 
-                        'Indisponível' =>
+                        'Alugado' =>
+                            'info',
+
+
+                        'Reservado' =>
+                            'warning',
+
+
+                        'Manutenção' =>
+                            'orange',
+
+
+                        'Inativo' =>
                             'danger',
 
 
                         default =>
                             'gray',
 
-
                     }),
-
-
-
-                IconColumn::make('active')
-
-                    ->label('Ativo')
-
-                    ->boolean(),
 
 
 
@@ -117,12 +122,27 @@ class PropertiesTable
                     ->sortable(),
 
 
-
             ])
 
 
 
             ->filters([
+
+
+                SelectFilter::make('company_id')
+
+                    ->label('Empresa')
+
+                    ->options(
+
+                        Company::query()
+
+                            ->pluck('name', 'id')
+
+                            ->toArray()
+
+                    ),
+
 
 
                 SelectFilter::make('type')
@@ -131,14 +151,18 @@ class PropertiesTable
 
                     ->options([
 
+
                         'house' =>
                             'Casa',
+
 
                         'apartment' =>
                             'Apartamento',
 
+
                         'commercial' =>
                             'Sala Comercial',
+
 
                         'land' =>
                             'Terreno',
@@ -147,20 +171,34 @@ class PropertiesTable
 
 
 
-                SelectFilter::make('active')
+                SelectFilter::make('status')
 
                     ->label('Situação')
 
                     ->options([
 
-                        1 =>
+
+                        'available' =>
                             'Disponível',
 
-                        0 =>
-                            'Indisponível',
+
+                        'rented' =>
+                            'Alugado',
+
+
+                        'reserved' =>
+                            'Reservado',
+
+
+                        'maintenance' =>
+                            'Manutenção',
+
+
+                        'inactive' =>
+                            'Inativo',
+
 
                     ]),
-
 
 
             ])
