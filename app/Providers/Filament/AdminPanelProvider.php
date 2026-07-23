@@ -21,37 +21,45 @@ use Illuminate\View\Middleware\ShareErrorsFromSession;
 
 class AdminPanelProvider extends PanelProvider
 {
-    public function panel(Panel $panel): Panel
-    {
-        return $panel
-            ->id('admin')
-            ->path('admin')
-            ->colors([
-                'primary' => Color::Amber,
-            ])
-            ->discoverResources(in: app_path('Filament/Admin/Resources'), for: 'App\Filament\Admin\Resources')
-            ->discoverPages(in: app_path('Filament/Admin/Pages'), for: 'App\Filament\Admin\Pages')
-            ->pages([
-                Dashboard::class,
-            ])
-            ->discoverWidgets(in: app_path('Filament/Admin/Widgets'), for: 'App\Filament\Admin\Widgets')
-            ->widgets([
-                AccountWidget::class,
-                FilamentInfoWidget::class,
-            ])
-            ->middleware([
-                EncryptCookies::class,
-                AddQueuedCookiesToResponse::class,
-                StartSession::class,
-                AuthenticateSession::class,
-                ShareErrorsFromSession::class,
-                PreventRequestForgery::class,
-                SubstituteBindings::class,
-                DisableBladeIconComponents::class,
-                DispatchServingFilamentEvent::class,
-            ])
-            ->authMiddleware([
-                Authenticate::class,
-            ]);
-    }
+
+  public function panel(Panel $panel): Panel
+  {
+    return $panel
+        ->default()
+        ->id('admin')
+        ->path('admin')
+        ->login()
+        ->colors([
+            'primary' => Color::Amber,
+        ])
+        ->discoverResources(
+            in: app_path('Filament/Admin/Resources'),
+            for: 'App\\Filament\\Admin\\Resources',
+        )
+        ->discoverPages(
+            in: app_path('Filament/Admin/Pages'),
+            for: 'App\\Filament\\Admin\\Pages',
+        )
+        ->discoverWidgets(
+            in: app_path('Filament/Admin/Widgets'),
+            for: 'App\\Filament\\Admin\\Widgets',
+        )
+        ->widgets([
+        ])
+        ->middleware([
+            EncryptCookies::class,
+            AddQueuedCookiesToResponse::class,
+            StartSession::class,
+            AuthenticateSession::class,
+            ShareErrorsFromSession::class,
+            PreventRequestForgery::class,
+            SubstituteBindings::class,
+            DisableBladeIconComponents::class,
+            DispatchServingFilamentEvent::class,
+        ])
+        ->authMiddleware([
+            Authenticate::class,
+        ]);
+  }
+
 }

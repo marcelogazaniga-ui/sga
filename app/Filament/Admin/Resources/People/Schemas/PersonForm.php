@@ -2,12 +2,15 @@
 
 namespace App\Filament\Admin\Resources\People\Schemas;
 
+use Illuminate\Support\Facades\Http;
+use Filament\Forms\Components\TextInput\Mask;
+use App\Enums\PersonKind;
 use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Textarea;
 use Filament\Schemas\Schema;
-use Filament\Forms\Components\Section;
+use Filament\Schemas\Components\Section;
 
 class PersonForm
 {
@@ -19,24 +22,24 @@ class PersonForm
                 Section::make('Dados Gerais')
                     ->schema([
 
-                        Select::make('person_type')
-                            ->label('Tipo de Pessoa')
+                        Select::make('roles')
+                            ->label('Papéis')
+                            ->multiple()
                             ->options([
                                 'owner' => 'Proprietário',
-                                'tenant' => 'Inquilino',
+                                'landlord' => 'Locador',
+                                'tenant' => 'Locatário',
                                 'guarantor' => 'Fiador',
-                                'supplier' => 'Fornecedor',
+                                'provider' => 'Prestador',
                                 'employee' => 'Funcionário',
                             ])
-                            ->required(),
+                            ->preload(),
 
                         Select::make('person_kind')
                             ->label('Classificação')
-                            ->options([
-                                'individual' => 'Pessoa Física',
-                                'company' => 'Pessoa Jurídica',
-                            ])
+                            ->options(PersonKind::options())
                             ->default('individual')
+                            ->live()
                             ->required(),
 
                         TextInput::make('name')
@@ -45,15 +48,30 @@ class PersonForm
                             ->maxLength(255),
 
                         TextInput::make('trade_name')
-                            ->label('Nome Fantasia')
-                            ->visible(fn ($get) =>
-                                $get('person_kind') === 'company'
-                            ),
-
+    ->label('Nome Fantasia')
+    ->visible(fn ($get) =>
+        $get('person_kind') === 'company'
+    )
+    ->required(fn ($get) =>
+        $get('person_kind') === 'company'
+    ),
                         TextInput::make('document')
-                            ->label('CPF / CNPJ')
-                            ->maxLength(20),
-
+    ->label(fn ($get) =>
+        $get('person_kind') === 'company'
+            ? 'CNPJ'
+            : 'CPF'
+    )
+    ->mask(fn ($get) =>
+        $get('person_kind') === 'company'
+            ? '99.999.999/9999-99'
+            : '999.999.999-99'
+    )
+    ->stripCharacters('.-/')
+    ->maxLength(fn ($get) =>
+        $get('person_kind') === 'company'
+            ? 18
+            : 14
+    ),
                         DatePicker::make('birth_date')
                             ->label('Data Nascimento'),
 
@@ -62,21 +80,64 @@ class PersonForm
                             ->label('E-mail'),
 
                         TextInput::make('phone')
-                            ->label('Telefone'),
+                            ->label('Telefone')
+                            ->mask('(99) 99999-9999'),
 
                         TextInput::make('mobile')
-                            ->label('Celular'),
+                            ->label('Celular')
+                            ->mask('(99) 99999-9999'),
 
                     ])
                     ->columns(2),
-
 
 
                 Section::make('Endereço')
                     ->schema([
 
                         TextInput::make('zip_code')
-                            ->label('CEP'),
+                            ->label('CEP')
+                            ->mask('99999-999')
+    ->live()
+    ->afterStateUpdated(function ($state, callable $set) {
+
+        if (! $state) {
+            return;
+        }
+
+        $cep = preg_replace('/[^0-9]/', '', $state);
+
+        if (strlen($cep) !== 8) {
+            return;
+        }
+
+        try {
+
+            $response = Http::get(
+                "https://viacep.com.br/ws/{$cep}/json/"
+            );
+
+            if ($response->successful()) {
+
+                $data = $response->json();
+
+                if (!isset($data['erro'])) {
+
+                    $set('address', $data['logradouro'] ?? '');
+                    $set('district', $data['bairro'] ?? '');
+                    $set('city', $data['localidade'] ?? '');
+                    $set('state', $data['uf'] ?? '');
+
+                }
+
+            }
+
+        } catch (\Exception $e) {
+
+            // ignora erro de conexão
+
+        }
+
+    }),
 
                         TextInput::make('address')
                             ->label('Endereço'),
@@ -101,7 +162,6 @@ class PersonForm
                     ->columns(2),
 
 
-
                 Section::make('Financeiro')
                     ->schema([
 
@@ -111,11 +171,11 @@ class PersonForm
                         Select::make('pix_type')
                             ->label('Tipo PIX')
                             ->options([
-                                'cpf'=>'CPF',
-                                'cnpj'=>'CNPJ',
-                                'email'=>'E-mail',
-                                'phone'=>'Telefone',
-                                'random'=>'Aleatória',
+                                'cpf' => 'CPF',
+                                'cnpj' => 'CNPJ',
+                                'email' => 'E-mail',
+                                'phone' => 'Telefone',
+                                'random' => 'Aleatória',
                             ]),
 
                         TextInput::make('bank')
@@ -131,7 +191,6 @@ class PersonForm
                     ->columns(2),
 
 
-
                 Section::make('Observações')
                     ->schema([
 
@@ -142,12 +201,11 @@ class PersonForm
                     ]),
 
 
-
                 Select::make('active')
                     ->label('Status')
                     ->options([
-                        1=>'Ativo',
-                        0=>'Inativo',
+                        1 => 'Ativo',
+                        0 => 'Inativo',
                     ])
                     ->default(1)
                     ->required(),

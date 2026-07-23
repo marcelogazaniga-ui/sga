@@ -22,8 +22,6 @@ class PersonResource extends Resource
 
     protected static ?string $modelLabel = 'Pessoa';
 
-    protected static ?string $pluralModelLabel = 'Pessoas';
-
     protected static ?string $model = Person::class;
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedUsers;

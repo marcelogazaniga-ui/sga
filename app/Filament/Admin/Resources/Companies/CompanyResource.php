@@ -16,6 +16,14 @@ use Filament\Tables\Table;
 
 class CompanyResource extends Resource
 {
+    protected static ?string $navigationLabel = 'Empresas';
+
+    protected static string|\UnitEnum|null $navigationGroup = 'Cadastros';
+
+    protected static ?string $modelLabel = 'Empresa';
+
+    protected static ?string $pluralModelLabel = 'Empresas';
+
     protected static ?string $model = Company::class;
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedRectangleStack;

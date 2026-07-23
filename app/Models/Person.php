@@ -3,74 +3,75 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasManyThrough;
+
 
 class Person extends Model
 {
-    use SoftDeletes;
-
     protected $fillable = [
-        'company_id',
-        'person_type',
-        'person_kind',
+
         'name',
-        'trade_name',
         'document',
-        'birth_date',
         'email',
         'phone',
-        'mobile',
+        'birth_date',
         'zip_code',
         'address',
         'number',
-        'complement',
         'district',
         'city',
         'state',
-        'country',
-        'pix_key',
-        'pix_type',
-        'bank',
-        'agency',
-        'account',
-        'metadata',
         'notes',
         'active',
+
     ];
 
 
-    protected function casts(): array
-    {
-        return [
-            'birth_date' => 'date',
-            'metadata' => 'array',
-            'active' => 'boolean',
-        ];
-    }
+
+    protected $casts = [
+
+        'birth_date' => 'date',
+
+        'active' => 'boolean',
+
+    ];
 
 
-    public function company()
+
+    /**
+     * Perfis / funções da pessoa
+     */
+    public function roles(): HasMany
     {
-        return $this->belongsTo(
-            Company::class
+        return $this->hasMany(
+            PersonRole::class
         );
     }
 
 
-    public function scopeOwners($query)
+
+    /**
+     * Imóveis relacionados
+     */
+    public function propertyPeople(): HasMany
     {
-        return $query->where(
-            'person_type',
-            'owner'
+        return $this->hasMany(
+            PropertyPerson::class
         );
     }
 
 
-    public function scopeTenants($query)
+
+    /**
+     * Contratos onde participa
+     */
+    public function contractPeople(): HasMany
     {
-        return $query->where(
-            'person_type',
-            'tenant'
+        return $this->hasMany(
+            ContractPerson::class
         );
     }
+
+
 }
